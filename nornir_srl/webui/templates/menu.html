@@ -1,0 +1,105 @@
+<div class="fixed left-0 top-0 h-screen w-48 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white p-4 overflow-y-auto border-r border-gray-700/50">
+    <h2 class="text-2xl font-extrabold mb-6 text-center">
+        <span class="bg-gradient-to-r from-blue-400 via-purple-400 to-blue-500 bg-clip-text text-transparent hover:from-blue-500 hover:via-purple-500 hover:to-blue-600 transition-all duration-300 cursor-default tracking-wider drop-shadow-lg">
+            FCli
+        </span>
+    </h2>
+    
+    <nav class="space-y-4">
+        <!-- Main Menu -->
+        <div>
+            <a href="{{ url_for('index') }}" 
+               class="flex items-center py-1 px-3 rounded-lg transition-all duration-200 hover:bg-blue-600/20 hover:translate-x-2 group">
+                <span class="text-sm">Main Menu</span>
+            </a>
+        </div>
+
+        <!-- BGP Section -->
+        <div>
+            <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider px-2 mb-2">BGP Commands</h3>
+            <div class="space-y-1">
+                <a href="{{ url_for('command', cmd='bgp-peers') }}" 
+                   class="group flex items-center py-1 px-3 rounded-lg transition-all duration-200 hover:bg-blue-600/20 hover:translate-x-2">
+                    <div class="w-1 h-1 rounded-full bg-yellow-400 mr-2 group-hover:scale-125 transition-transform"></div>
+                    <span class="text-sm">BGP Peers</span>
+                </a>
+                <a href="{{ url_for('command', cmd='bgp-rib') }}" 
+                   class="group flex items-center py-1 px-3 rounded-lg transition-all duration-200 hover:bg-blue-600/20 hover:translate-x-2">
+                    <div class="w-1 h-1 rounded-full bg-yellow-400 mr-2 group-hover:scale-125 transition-transform"></div>
+                    <span class="text-sm">BGP RIB</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Interface Section -->
+        <div>
+            <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider px-2 mb-2">Interfaces</h3>
+            <div class="space-y-1">
+                <a href="{{ url_for('command', cmd='arp') }}" 
+                   class="group flex items-center py-1 px-3 rounded-lg transition-all duration-200 hover:bg-blue-600/20 hover:translate-x-2">
+                    <div class="w-1 h-1 rounded-full bg-green-400 mr-2 group-hover:scale-125 transition-transform"></div>
+                    <span class="text-sm">ARP</span>
+                </a>
+                <a href="{{ url_for('command', cmd='es') }}" 
+                   class="group flex items-center py-1 px-3 rounded-lg transition-all duration-200 hover:bg-blue-600/20 hover:translate-x-2">
+                    <div class="w-1 h-1 rounded-full bg-green-400 mr-2 group-hover:scale-125 transition-transform"></div>
+                    <span class="text-sm">Ethernet Segment</span>
+                </a>
+                <a href="{{ url_for('command', cmd='lag') }}" 
+                   class="group flex items-center py-1 px-3 rounded-lg transition-all duration-200 hover:bg-blue-600/20 hover:translate-x-2">
+                    <div class="w-1 h-1 rounded-full bg-green-400 mr-2 group-hover:scale-125 transition-transform"></div>
+                    <span class="text-sm">LAG</span>
+                </a>
+                <a href="{{ url_for('command', cmd='subif') }}" 
+                   class="group flex items-center py-1 px-3 rounded-lg transition-all duration-200 hover:bg-blue-600/20 hover:translate-x-2">
+                    <div class="w-1 h-1 rounded-full bg-green-400 mr-2 group-hover:scale-125 transition-transform"></div>
+                    <span class="text-sm">Sub-Interfaces</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Routing Section -->
+        <div>
+            <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider px-2 mb-2">Routing</h3>
+            <div class="space-y-1">
+                <a href="{{ url_for('command', cmd='ipv4-rib') }}" 
+                   class="group flex items-center py-1 px-3 rounded-lg transition-all duration-200 hover:bg-blue-600/20 hover:translate-x-2">
+                    <div class="w-1 h-1 rounded-full bg-blue-400 mr-2 group-hover:scale-125 transition-transform"></div>
+                    <span class="text-sm">IPv4 RIB</span>
+                </a>
+                <a href="{{ url_for('command', cmd='ipv6-rib') }}" 
+                   class="group flex items-center py-1 px-3 rounded-lg transition-all duration-200 hover:bg-blue-600/20 hover:translate-x-2">
+                    <div class="w-1 h-1 rounded-full bg-blue-400 mr-2 group-hover:scale-125 transition-transform"></div>
+                    <span class="text-sm">IPv6 RIB</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- System Section -->
+        <div>
+            <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider px-2 mb-2">System</h3>
+            <div class="space-y-1">
+                <a href="{{ url_for('command', cmd='lldp') }}" 
+                   class="group flex items-center py-1 px-3 rounded-lg transition-all duration-200 hover:bg-blue-600/20 hover:translate-x-2">
+                    <div class="w-1 h-1 rounded-full bg-purple-400 mr-2 group-hover:scale-125 transition-transform"></div>
+                    <span class="text-sm">LLDP</span>
+                </a>
+                <a href="{{ url_for('command', cmd='mac') }}" 
+                   class="group flex items-center py-1 px-3 rounded-lg transition-all duration-200 hover:bg-blue-600/20 hover:translate-x-2">
+                    <div class="w-1 h-1 rounded-full bg-purple-400 mr-2 group-hover:scale-125 transition-transform"></div>
+                    <span class="text-sm">MAC</span>
+                </a>
+                <a href="{{ url_for('command', cmd='nd') }}" 
+                   class="group flex items-center py-1 px-3 rounded-lg transition-all duration-200 hover:bg-blue-600/20 hover:translate-x-2">
+                    <div class="w-1 h-1 rounded-full bg-purple-400 mr-2 group-hover:scale-125 transition-transform"></div>
+                    <span class="text-sm">ND</span>
+                </a>
+                <a href="{{ url_for('command', cmd='ni') }}" 
+                   class="group flex items-center py-1 px-3 rounded-lg transition-all duration-200 hover:bg-blue-600/20 hover:translate-x-2">
+                    <div class="w-1 h-1 rounded-full bg-purple-400 mr-2 group-hover:scale-125 transition-transform"></div>
+                    <span class="text-sm">Network Instance</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+</div>

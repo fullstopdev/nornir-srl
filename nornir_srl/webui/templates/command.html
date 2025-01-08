@@ -79,14 +79,60 @@
         .error-message.visible {
             display: block;
         }
+
+        .command-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+        }
+        
+        .command-title span {
+            background: linear-gradient(to right, #60a5fa, #a78bfa, #60a5fa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            transition: all 0.3s;
+            cursor: default;
+            letter-spacing: 0.05em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .command-title span:hover {
+            background: linear-gradient(to right, #3b82f6, #8b5cf6, #3b82f6);
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+
+        .results-container {
+            flex-grow: 1;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            background-color: #f8fafc;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-top: 1rem;
+            font-family: monospace;
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        .results-container pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
     </style>
 </head>
 <body class="bg-gray-100">
     <div class="container-fluid mx-0 p-0">
         <div class="flex">
             {% include 'menu.html' %}
-            <div class="main-content p-4">
-                <h1 class="text-2xl font-bold mb-4 uppercase tracking-wide text-center">{{ command }}</h1>
+            <div class="main-content p-4 flex flex-col">
+                <h1 class="command-title">
+                    <span class="drop-shadow-lg">{{ command }}</span>
+                </h1>
                 
                 <form id="command-form" class="bg-white p-6 rounded-lg shadow-lg">
                     {% for option in options %}
@@ -128,9 +174,9 @@
                     </button>
                 </form>
                 
-                <div class="mt-6">
+                <div class="mt-6 flex-grow">
                     <h2 class="text-xl font-bold mb-4">Results</h2>
-                    <div id="results" class="w-full overflow-x-auto bg-gray-50 p-4 rounded-lg">
+                    <div id="results" class="results-container">
                         <!-- Results will be inserted here -->
                     </div>
                 </div>
