@@ -105,9 +105,14 @@ def print_table(
             box_t = MINIMAL_DOUBLE_HEAD
     else:
         box_t = MINIMAL_DOUBLE_HEAD
-    #    table = Table(title=title, highlight=True, box=MINIMAL_DOUBLE_HEAD)
-    table = Table(title=title, highlight=True, box=box_t)
-    table.add_column("Node", no_wrap=True)
+
+    # Initialize 'node' as the first column
+    table = Table(
+        title=title,
+        highlight=True,
+        box=box_t,
+    )
+    table.add_column("node", no_wrap=True)  # Ensure 'node' column does not wrap
 
     # get fields across a nested dict with dicts and lists of dicts
     def get_fields(b, depth=0):
@@ -146,7 +151,8 @@ def print_table(
     for host, host_result in results.items():
         rows = []
         r: Result = host_result[0]
-        node: Host = r.host if r.host else Host("unkown")
+        node: Host = r.host if r.host else Host("unknown")
+        node_name: str = node.hostname if node.hostname else node.name  # Ensure node_name is correctly assigned
         if r.failed:
             print(f"Failed to get {resource} for {host}. Exception: {r.exception}")
             continue
@@ -155,7 +161,7 @@ def print_table(
                 if len(col_names) == 0:
                     col_names = get_fields(l)
                     for col in col_names:
-                        table.add_column(col, no_wrap=False)
+                        table.add_column(col, no_wrap=True)  # Ensure columns do not wrap
                 common = {
                     x: y
                     for x, y in l.items()
@@ -171,8 +177,6 @@ def print_table(
                 ):  # single row per host
                     if pass_filter(common, filter):
                         rows.append(common)
-                #                if pass_filter(row, filter):
-                #                    rows.append({k:v for k,v in l.items()})
                 else:
                     for key, v in l.items():
                         if isinstance(v, list):
@@ -217,8 +221,7 @@ def print_table(
                 row[k] = str(STYLE_MAP.get(str(v), "")) + str(v)
             values = [str(row.get(k, "")) for k in col_names]
             if first_row:
-                node_name: str = node.hostname if node.hostname else node.name
-                table.add_row(node_name, *values)
+                table.add_row(node_name, *values)  # 'node' as the first cell
                 first_row = False
             else:
                 table.add_row("", *values)

@@ -273,3 +273,42 @@ pre {
     border-color: #4299e1;
     box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
 }
+
+/* Remove styles specific to the Download Excel button if any */
+/* Since the button has been removed, these styles are no longer necessary */
+
+/* Example:
+#download-excel {
+    background: #28a745;
+    /* other styles */
+}
+*/
+
+/* If no specific styles were added for the button, no changes are needed */
+
+/* ...existing CSS code... */
+
+.result-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    table-layout: auto; /* Ensure table layout allows columns to adjust based on content */
+}
+
+.result-table th, .result-table td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    white-space: normal;       /* Allow text to wrap */
+    word-wrap: break-word;     /* Enable breaking long words */
+    overflow: visible;         /* Ensure overflow is visible */
+    font-size: 1rem;           /* Ensure readable font size */
+}
+
+/* Style the 'node' column */
+.result-table th:first-child, .result-table td:first-child {
+    width: 150px;               /* Set a suitable width for 'node' column */
+    text-align: left;           /* Align text to the left */
+    background-color: #f2f2f2;  /* Optional: Different background for 'node' column */
+}
+
+/* ...existing CSS code... */

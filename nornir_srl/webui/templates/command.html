@@ -108,8 +108,7 @@
         .results-container {
             flex-grow: 1;
             overflow-x: auto;
-            white-space: pre-wrap;
-            word-wrap: break-word;
+            white-space: nowrap;
             background-color: #f8fafc;
             border-radius: 0.5rem;
             padding: 1rem;
@@ -122,6 +121,38 @@
         .results-container pre {
             white-space: pre-wrap;
             word-wrap: break-word;
+        }
+
+        /* Add basic styling for the result table */
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            table-layout: auto; /* Ensure table layout allows columns to adjust based on content */
+        }
+
+        .result-table th, .result-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            white-space: nowrap;
+            word-wrap: normal;
+            overflow: visible;
+            font-size: 1rem;
+            text-overflow: clip;
+        }
+
+        .result-table th:first-child, .result-table td:first-child {
+            width: 150px;               /* Set a suitable width for 'Node' column */
+            text-align: left;           /* Align text to the left */
+            background-color: #f2f2f2;  /* Optional: Different background for 'Node' column */
+        }
+
+        .search-box {
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 0.375rem;
+            width: 100%;
         }
     </style>
 </head>
@@ -176,6 +207,7 @@
                 
                 <div class="mt-6 flex-grow">
                     <h2 class="text-xl font-bold mb-4">Results</h2>
+                    <input type="text" id="search-box" class="search-box" placeholder="Search...">
                     <div id="results" class="results-container">
                         <!-- Results will be inserted here -->
                     </div>
@@ -215,9 +247,10 @@
             const headers = Object.keys(data[0]);
             
             return `
-            <table class="min-w-full divide-y divide-gray-200">
+            <table class="min-w-full divide-y divide-gray-200 result-table">
                 <thead class="bg-gray-50">
                     <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Node</th>
                         ${headers.map(header => `
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 ${header}
@@ -228,6 +261,7 @@
                 <tbody class="bg-white divide-y divide-gray-200">
                     ${data.map((row, i) => `
                         <tr class="${i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${row.node}</td>
                             ${headers.map(header => `
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                     ${row[header] || ''}
@@ -305,7 +339,76 @@
             })
             .then(response => response.json())
             .then(data => {
-                document.getElementById('results').innerHTML = createTable(data.output);
+                const resultsDiv = document.getElementById('results');
+                resultsDiv.innerHTML = ''; // Clear previous results
+
+                if (data.headers && data.data) {
+                    // Create table
+                    const table = document.createElement('table');
+                    table.classList.add('result-table');
+
+                    // Create header row
+                    const thead = document.createElement('thead');
+                    const headerRow = document.createElement('tr');
+                    data.headers.forEach(header => {
+                        const th = document.createElement('th');
+                        th.textContent = header;
+                        headerRow.appendChild(th);
+                    });
+                    thead.appendChild(headerRow);
+                    table.appendChild(thead);
+
+                    // Create table body
+                    const tbody = document.createElement('tbody');
+                    data.data.forEach((row, index) => {
+                        const tr = document.createElement('tr');
+                        data.headers.forEach((header) => {
+                            const td = document.createElement('td');
+                            let cellValue = row[header] || "";
+
+                            // Map bracketed prefixes to CSS classes
+                            const patterns = [
+                                { key: "[ok]",    css: "ok"   },
+                                { key: "[err]",   css: "err"  },
+                                { key: "[info]",  css: "info" },
+                                { key: "[blue]",  css: "blue" },
+                                { key: "[cyan]",  css: "cyan" }
+                            ];
+                            patterns.forEach(p => {
+                                if (cellValue.startsWith(p.key)) {
+                                    td.classList.add(p.css);
+                                    cellValue = cellValue.substring(p.key.length);
+                                }
+                            });
+
+                            td.textContent = cellValue;
+                            tr.appendChild(td);
+                        });
+                        tbody.appendChild(tr);
+                    });
+                    table.appendChild(tbody);
+
+                    resultsDiv.appendChild(table);
+                } else if (data.output) {
+                    // Display plain text output
+                    const pre = document.createElement('pre');
+                    pre.textContent = data.output;
+                    resultsDiv.appendChild(pre);
+                } else {
+                    resultsDiv.textContent = 'No data available.';
+                }
+
+                // Add search functionality
+                const searchBox = document.getElementById('search-box');
+                searchBox.addEventListener('input', function() {
+                    const searchTerm = this.value.toLowerCase();
+                    const rows = document.querySelectorAll('.result-table tbody tr');
+                    rows.forEach(row => {
+                        const cells = row.querySelectorAll('td');
+                        const match = Array.from(cells).some(cell => cell.textContent.toLowerCase().includes(searchTerm));
+                        row.style.display = match ? '' : 'none';
+                    });
+                });
             })
             .catch(error => {
                 console.error('Error:', error);

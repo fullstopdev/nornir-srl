@@ -1,48 +1,47 @@
-
 ![Demo](https://github.com/srl-labs/nornir-srl/blob/main/imgs/fcli_demo.gif)
+
 # nornir-srl
 
-This module provides a [Nornir](https://nornir.readthedocs.io/en/latest/) connection [plugin](https://nornir.tech/nornir/plugins/) for Nokia SRLinux devices. It uses the gNMI management interface of SRLinux to fetch state and push configurations and the [PyGNMI](https://github.com/akarneliuk/pygnmi) Python module to interact with gNMI. 
+This module provides a [Nornir](https://nornir.readthedocs.io/en/latest/) connection [plugin](https://nornir.tech/nornir/plugins/) for Nokia SRLinux devices. It uses the gNMI management interface of SRLinux to fetch state and push configurations and the [PyGNMI](https://github.com/akarneliuk/pygnmi) Python module to interact with gNMI.
 
-Rather than limiting the connection plugin to primitives like `open_connection`, `close_connection`, `get`, `set`, etc, this module provides also methods to get information from the device for common resources. Since the device model tends to change between releases, it was considered a better approach to provide this functionality as part of the connection plugin and hide complexity of model changes to the user or Nornir tasks. 
+Rather than limiting the connection plugin to primitives like `open_connection`, `close_connection`, `get`, `set`, etc., this module also provides methods to get information from the device for common resources. Since the device model tends to change between releases, it was considered a better approach to provide this functionality as part of the connection plugin and hide the complexity of model changes from the user or Nornir tasks.
 
-In addition to the connection plugin, there is a set of Nornir tasks that use the connection plugin to perform common operations on the device, like get BGP peers, get MAC table, get subinterfaces, etc. These Nornir tasks are called by a command-line interface `fcli` that provides a network-wide CLI to perform show commands across an entire set or subset for SRLinux nodes.
+In addition to the connection plugin, there is a set of Nornir tasks that use the connection plugin to perform common operations on the device, like get BGP peers, get MAC table, get subinterfaces, etc. These Nornir tasks are called by a command-line interface `fcli` that provides a network-wide CLI to perform show commands across an entire set or subset of SRLinux nodes.
 
-> **Note:** The current functionality is focused on a read-only _network-wide CLI_ to perform show commands across an entire set or subset for SRLinux nodes, as defined in the Nornir inventory and through command-line filter options. It shows output in a tabular format for easy reading.
-Following versions may focus on configuration management and command execution on the nodes.
+> **Note:** The current functionality is focused on a read-only _network-wide CLI_ to perform show commands across an entire set or subset of SRLinux nodes, as defined in the Nornir inventory and through command-line filter options. It shows output in a tabular format for easy reading. Following versions may focus on configuration management and command execution on the nodes.
 
-# Quickstart
+## Quickstart
 
-## Prerequisites
+### Prerequisites
 
-- have [Containerlab](https://containerlab.dev/) installed
-- have a running containerlab topology with SRLinux nodes
+- Have [Containerlab](https://containerlab.dev/) installed
+- Have a running containerlab topology with SRLinux nodes
 - Internet access to pull the `nornir-srl` container image
 
-## Create a shell alias for `fcli`
+### Create a shell alias for `fcli`
 
-- go to the directory where your containerlab topology file is located
-- create an alias for `fcli` as follows and modify the `CLAB_TOPO` to match your topology file name
-- modify the `--network` option to match your containerlab network name (default is the name of the lab)
-- latest version of `nornir-srl` container image is [here](https://github.com/srl-labs/nornir-srl/pkgs/container/nornir-srl). Modify the tag accordingly if you want to use a different version
+- Go to the directory where your containerlab topology file is located
+- Create an alias for `fcli` as follows and modify the `CLAB_TOPO` to match your topology file name
+- Modify the `--network` option to match your containerlab network name (default is the name of the lab)
+- The latest version of the `nornir-srl` container image is [here](https://github.com/srl-labs/nornir-srl/pkgs/container/nornir-srl). Modify the tag accordingly if you want to use a different version
 
-```
+```sh
 CLAB_TOPO=topo.yaml && alias fcli="docker run -t --network $(grep '^name:' $CLAB_TOPO | awk '{print $2}') --rm -v /etc/hosts:/etc/hosts:ro -v ${PWD}/${CLAB_TOPO}:/topo.yml ghcr.io/srl-labs/nornir-srl:latest -t /topo.yml"
 ```
 
-## Run `fcli`
+### Run `fcli`
 
-```
+```sh
 ❯ fcli --help
 Usage: fcli [OPTIONS] COMMAND [ARGS]...
 
 Options:
   -c, --cfg PATH         Nornir config file. Mutually exclusive with -t
                          [default: nornir_config.yaml]
-  -i, --inv-filter TEXT  inventory filter, e.g. -i site=lab -i role=leaf.
+  -i, --inv-filter TEXT  Inventory filter, e.g. -i site=lab -i role=leaf.
                          Possible filter-fields are defined in inventory.
                          Multiple filters are ANDed
-  -b, --box-type TEXT    box type of printed table, e.g. -b
+  -b, --box-type TEXT    Box type of printed table, e.g. -b
                          minimal_double_head. 'python -m rich.box' for options
   -t, --topo-file PATH   CLAB topology file, e.g. -t topo.yaml. Mutually
                          exclusive with -c
@@ -61,53 +60,54 @@ Commands:
   sys-info   Displays System Info of nodes
 ```
 
-# Installation
+## Installation
 
-## Docker-based installation
+### Docker-based installation
 
-This is the easiest way to get started. It requires [Docker](https://docs.docker.com/get-docker/) and optionally  [Containerlab](https://containerlab.dev/) to be installed on your system.
+This is the easiest way to get started. It requires [Docker](https://docs.docker.com/get-docker/) and optionally [Containerlab](https://containerlab.dev/) to be installed on your system.
 
-> NOTE: if you have issues connecting to the docker network of containerlab from the `nornir-srl` container that uses the standard bridge `docker0`, make sure proper `iptables` rules are in place to permit traffic between different Docker networks, which is **by default blocked**. For example, on Ubuntu 20.04, you can use the following command:
+> **Note:** If you have issues connecting to the Docker network of containerlab from the `nornir-srl` container that uses the standard bridge `docker0`, make sure proper `iptables` rules are in place to permit traffic between different Docker networks, which is **by default blocked**. For example, on Ubuntu 20.04, you can use the following command:
 
-```
+```sh
 iptables -I DOCKER-USER -o docker0 -j ACCEPT -m comment --comment "allow inter-network comms"
 ```
 
 Alternatively, you can attach the `nornir-srl` container to the containerlab network to avoid adding iptables rules (cf. aliases below).
 
-To run `fcli`, create an alias in your shell session. For example, assuming you're using containerlab and  you have a `clab_topo.yml` file in your current directory and lab is up and running:
+To run `fcli`, create an alias in your shell session. For example, assuming you're using containerlab and you have a `clab_topo.yml` file in your current directory and the lab is up and running:
 
-```
+```sh
 CLAB_TOPO=clab_topo.yml && alias fcli="docker run -t --network $(grep '^name:' $CLAB_TOPO | awk '{print $2}') --rm -v /etc/hosts:/etc/hosts:ro -v ${PWD}/${CLAB_TOPO}:/topo.yml ghcr.io/srl-labs/nornir-srl:0.2.1 -t /topo.yml"
 ```
 
-This command assumes that the containerlab topology file is named `clab_topo.yml` and is in the current directory. If not, change the `CLAB_TOPO` variable accordingly. Also, it assumes that the containerlab topology is using the default containerlab docker-network naming, i.e. name of the lab. If you have overridden the management network with `.mgmt.network` in the topology file, change the `--network` option accordingly.
+This command assumes that the containerlab topology file is named `clab_topo.yml` and is in the current directory. If not, change the `CLAB_TOPO` variable accordingly. Also, it assumes that the containerlab topology is using the default containerlab docker-network naming, i.e., the name of the lab. If you have overridden the management network with `.mgmt.network` in the topology file, change the `--network` option accordingly.
 
-## Python-based installation with `pip`
+### Python-based installation with `pip`
 
-Create a Python virtual-env using your favorite workflow, For example:
-```
+Create a Python virtual environment using your favorite workflow. For example:
+
+```sh
 mkdir nornir-srl && cd nornir-srl
 python3 -m venv .venv
 source .venv/bin/activate
 ```
-Following command will install the the `nornir-srl` module and all its dependencies, including Nornir core.
 
-```
+The following command will install the `nornir-srl` module and all its dependencies, including Nornir core.
+
+```sh
 pip install wheel
 pip install -U nornir-srl
 ```
 
-## Nornir-based inventory mode
+### Nornir-based inventory mode
 
-In this mode, a Nornir configuration file must be provided with the `-c` option. The Nornir inventory is polulated by the `InventoryPlugin` and associated options as specified in the config file. See below for an example with the included `YAMLInventory` plugin and the associated inventory files. This mode is typically used for real hardware-based fabric.
+In this mode, a Nornir configuration file must be provided with the `-c` option. The Nornir inventory is populated by the `InventoryPlugin` and associated options as specified in the config file. See below for an example with the included `YAMLInventory` plugin and the associated inventory files. This mode is typically used for real hardware-based fabric.
 
-Create the Nornir confguration file, for example:
+Create the Nornir configuration file, for example:
 
 ```yaml
 # nornir_config.yaml
 inventory:
-    #    plugin: SimpleInventory
     plugin: YAMLInventory
     options:
         host_file: "./inventory/hosts.yaml"
@@ -133,6 +133,7 @@ clab-4l2s-s1:
     hostname: clab-4l2s-s1
     groups: [srl, fabric, spines]
 ```
+
 ```yaml
 ## groups.yaml
 global:
@@ -147,39 +148,40 @@ srl:
             extras:
                 path_cert: "./root-ca.pem"
 spines:
-    groups: [ global ]
+    groups: [global]
     data:
         role: spine
         type: ixr-d3
 leafs:
-    groups: [ global ]
+    groups: [global]
     data:
         role: leaf
         type: ixr-d2
 ```
+
 The root certificate is specified once for all devices in group `srl` via the `connection_options.srlinux.extras.path_cert` parameter.
 
-## CLAB-based inventory mode
+### CLAB-based inventory mode
 
-In this mode, the Nornir inventory is populated by a containerlab topology file and no further configuration files are needed. The containerlab topo file is specified with the `-t` option. 
+In this mode, the Nornir inventory is populated by a containerlab topology file and no further configuration files are needed. The containerlab topo file is specified with the `-t` option.
 
-`fcli` converts the topology file to a _hosts_ and _groups_ file and only nodes of kind=srl are populated in the host inventory. Furthermore, the `prefix` parameter in the topo file is considered to generate the hostnames. The presence of _labels_ in the topo file is mapped into node-specific attribs that can be used in inventory filters (`-i` option).
+`fcli` converts the topology file to a _hosts_ and _groups_ file and only nodes of kind=srl are populated in the host inventory. Furthermore, the `prefix` parameter in the topo file is considered to generate the hostnames. The presence of _labels_ in the topo file is mapped into node-specific attributes that can be used in inventory filters (`-i` option).
 
-# Usage
+## Usage
 
-` fcli` supports a set of reports that can be run against a set of SRLinux nodes. The set of nodes is defined by the Nornir inventory and optionally filtered by the `-i` option.
+`fcli` supports a set of reports that can be run against a set of SRLinux nodes. The set of nodes is defined by the Nornir inventory and optionally filtered by the `-i` option.
 
-```
+```sh
 ❯ fcli
 Usage: fcli [OPTIONS] COMMAND [ARGS]...
 
 Options:
   -c, --cfg PATH         Nornir config file. Mutually exclusive with -t
                          [default: nornir_config.yaml]
-  -i, --inv-filter TEXT  inventory filter, e.g. -i site=lab -i role=leaf.
+  -i, --inv-filter TEXT  Inventory filter, e.g. -i site=lab -i role=leaf.
                          Possible filter-fields are defined in inventory.
                          Multiple filters are ANDed
-  -b, --box-type TEXT    box type of printed table, e.g. -b
+  -b, --box-type TEXT    Box type of printed table, e.g. -b
                          minimal_double_head. 'python -m rich.box' for options
   -t, --topo-file PATH   CLAB topology file, e.g. -t topo.yaml. Mutually
                          exclusive with -c
@@ -198,9 +200,9 @@ Commands:
   sys-info   Displays System Info of nodes
 ```
 
-To run a specific report, use the corresponding command, e.g. `fcli mac` to display the MAC table of all nodes in the inventory. The output is a table with columns relevant to the report.
+To run a specific report, use the corresponding command, e.g., `fcli mac` to display the MAC table of all nodes in the inventory. The output is a table with columns relevant to the report.
 
-```
+```sh
 ❯ fcli -b ascii mac
                                                               MAC Table                                                              
 +-----------------------------------------------------------------------------------------------------------------------------------+
@@ -225,41 +227,40 @@ To run a specific report, use the corresponding command, e.g. `fcli mac` to disp
 +-----------------------------------------------------------------------------------------------------------------------------------+
 ```
 
-Some reports have additional options. You can get help on the options with the `--help` option __after__ the report name, e.g. `fcli bgp-rib --help`:
+Some reports have additional options. You can get help on the options with the `--help` option __after__ the report name, e.g., `fcli bgp-rib --help`:
 
-```
+```sh
 ❯ fcli bgp-rib --help
 Usage: fcli bgp-rib [OPTIONS]
 
   Displays BGP RIB
 
 Options:
-  -f, --field-filter TEXT       filter fields with <field-name>=<glob-
-                                pattern>, e.g. -f state=up -f
-                                admin_state="ena*". Fieldnames correspond to
-                                column names of a report
+  -f, --field-filter TEXT       Filter fields with <field-name>=<glob-pattern>, e.g., -f state=up -f admin_state="ena*". Fieldnames correspond to column names of a report
   -r, --route-fam [evpn|ipv4]   Route family for BGP RIB  [required]
   -t, --route-type [1|2|3|4|5]  Route type for EVPN routes
   --help                        Show this message and exit.
 ```
 
-## Filtering
+### Filtering
 
 Optionally, you can specify filters to control the output. There are 2 types of filters:
 
-- inventory filters, specified with the global `-i` option, filter on the inventory, e.g. `-i hostname=clab-4l2s-l1`  or `-i role=leaf` based on inventory data
-- field filters, specified with the report-specific `-f` option. This filters based on the fields shown in the report and a glob pattern, e.g. `-f state="esta*"`. Multiple field filters can be specified by repeated `-f` options
-- report-specific options are options specific to a report, if applicable. Currently, the only report that needs extra arguments is 'bgp-rib', i.e. `route_fam=evpn|ipv4|ipv6` and `route_type=1|2|3|4|5`. The latter relates to EVPN route-trypes and is optional. Defaults to '2' (mac-ip-routes). 
+- Inventory filters, specified with the global `-i` option, filter on the inventory, e.g., `-i hostname=clab-4l2s-l1` or `-i role=leaf` based on inventory data
+- Field filters, specified with the report-specific `-f` option. This filters based on the fields shown in the report and a glob pattern, e.g., `-f state="esta*"`. Multiple field filters can be specified by repeated `-f` options
+- Report-specific options are options specific to a report, if applicable. Currently, the only report that needs extra arguments is 'bgp-rib', i.e., `route_fam=evpn|ipv4|ipv6` and `route_type=1|2|3|4|5`. The latter relates to EVPN route-types and is optional. Defaults to '2' (mac-ip-routes).
 
-## Examples
+### Examples
 
-### mac-table
+#### mac-table
 
 Find all MAC entries on all leafs in mac-vrf `macvrf-202` that matches the pattern `1A:DC`
 
-`fcli -i role=leaf mac -f NI=macvrf-202 -f Address="1A:DC:*"`
-
+```sh
+fcli -i role=leaf mac -f NI=macvrf-202 -f Address="1A:DC:*"
 ```
+
+```sh
                              MAC Table                             
      Fields filter:{'NI': 'macvrf-202', 'Address': '1A:DC:*'}      
                  Inventory filter:{'role': 'leaf'}                 
@@ -272,13 +273,15 @@ Find all MAC entries on all leafs in mac-vrf `macvrf-202` that matches the patte
 +-----------------------------------------------------------------+
 ```
 
-### bgp-peers
+#### bgp-peers
 
 Show all BGP peers on all nodes that are in state `active`:
 
-`fcli bgp-peers -f state=active`
-
+```sh
+fcli bgp-peers -f state=active
 ```
+
+```sh
                                                                   BGP Peers                                                                   
                                                       Fields filter:{'state': 'active'}                                                       
 +--------------------------------------------------------------------------------------------------------------------------------------------+
@@ -296,13 +299,15 @@ Show all BGP peers on all nodes that are in state `active`:
 +--------------------------------------------------------------------------------------------------------------------------------------------+
 ```
 
-### ipv4-rib
+#### ipv4-rib
 
 Show all IPv4 routes on all nodes across all network-instances that matches address `192.168.0.7` with LPM (longest-prefix-match):
 
-`fcli ipv4-rib -a 192.168.0.7`
-
+```sh
+fcli ipv4-rib -a 192.168.0.7
 ```
+
+```sh
                                        IPv4 RIB - hunting for 192.168.0.7                                       
 +--------------------------------------------------------------------------------------------------------------+
 | Node         | NI      | Act | Prefix         | itf                | metric | next-hop        | pref | type  |
@@ -326,13 +331,15 @@ Show all IPv4 routes on all nodes across all network-instances that matches addr
 +--------------------------------------------------------------------------------------------------------------+
 ```
 
-### bgp-rib
+#### bgp-rib
 
 Show all active BGP routes with AF=ipv4 that are active and used for prefix `192.168.255.4/32`:
 
-`fcli bgp-rib -r ipv4 -f Pfx="192.168.255.4/32" -f 0_st="u*>"`
-
+```sh
+fcli bgp-rib -r ipv4 -f Pfx="192.168.255.4/32" -f 0_st="u*>"
 ```
+
+```sh
                                                         BGP RIB - IPV4                                                         
                                    Fields filter:{'Pfx': '192.168.255.4/32', '0_st': 'u*>'}                                    
 +-----------------------------------------------------------------------------------------------------------------------------+
@@ -357,9 +364,11 @@ Show all active BGP routes with AF=ipv4 that are active and used for prefix `192
 
 Show all EVPN RT=2 routes for MAC address that starts with "1A:DC":
 
-`fcli bgp-rib -r evpn -t 2 -f MAC="1A:DC:*"`
-
+```sh
+fcli bgp-rib -r evpn -t 2 -f MAC="1A:DC:*"
 ```
+
+```sh
                                                                            BGP RIB - EVPN route-type 2                                                                            
                                                                          Fields filter:{'MAC': '1A:DC*'}                                                                          
 +--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+

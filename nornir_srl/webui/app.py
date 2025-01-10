@@ -143,7 +143,15 @@ def command(cmd):
                 command.extend([option, value])
                     
         output = run_fcli_command(command)
-        return jsonify({'output': output})
+        parsed_output = parse_ascii_table(output)
+        
+        if isinstance(parsed_output, str):
+            return jsonify({'output': parsed_output})
+        else:
+            return jsonify({
+                'headers': parsed_output['headers'],
+                'data': parsed_output['data']  # Ensure 'Node' is included in data
+            })
     
     return render_template('command.html', command=cmd, options=options)
 
@@ -157,6 +165,79 @@ def parse_help_output(help_output):
             'description': match.group(2).strip()
         })
     return options
+
+def parse_ascii_table(output):
+    """Parse ASCII table into structured data"""
+    lines = output.split('\n')
+    # Remove the last two lines
+    lines = lines[:-2]
+    # Find the header rows and separator line
+    header_rows = []
+    separator_idx = -1
+    for i, line in enumerate(lines):
+        if '═' in line:
+            separator_idx = i
+            break
+        if '│' in line:
+            header_rows.append(line)
+    
+    if not header_rows or separator_idx == -1:
+        return output  # Return original if not a table
+    
+    # Parse headers
+    headers = []
+    for col in zip(*[row.split('│')[0:] for row in header_rows]):
+        header = ' '.join(part.strip() for part in col if part.strip())
+        headers.append(header.lower())  # Convert headers to lowercase
+    
+    # Ensure 'node' is the first header
+    if 'node' in headers:
+        headers.remove('node')
+        headers.insert(0, 'node')
+    else:
+        headers.insert(0, 'node')  # Add 'node' if not present
+    
+    # Parse data rows
+    data = []
+    current_node = None
+    last_known_node = None
+    last_known_ni = None
+
+    for line in lines[separator_idx + 1:]:
+        if not line.strip() or '─' in line:
+            continue
+        cols = [col.strip() for col in line.split('│')[0:]]  # Include the last column
+        if len(cols) < len(headers):
+            cols.append(line.split('│')[-1].strip())  # Add the last column if missing
+        if cols:
+            if len(cols) < len(headers):
+                if current_node is None:
+                    current_node = 'unknown'
+                cols.insert(0, current_node)
+            else:
+                current_node = cols[0]
+            row_dict = {header: col for header, col in zip(headers, cols)}
+
+            # Fill empty 'node' or 'ni' with last non-empty values
+            if 'node' in row_dict:
+                if not row_dict['node'].strip():
+                    if last_known_node:
+                        row_dict['node'] = last_known_node
+                else:
+                    last_known_node = row_dict['node']
+
+            if 'ni' in row_dict:
+                if not row_dict['ni'].strip():
+                    if last_known_ni:
+                        row_dict['ni'] = last_known_ni
+                else:
+                    last_known_ni = row_dict['ni']
+
+            data.append(row_dict)
+    return {
+        "headers": headers,
+        "data": data
+    }
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080, debug=True)
