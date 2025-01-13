@@ -312,3 +312,25 @@ pre {
 }
 
 /* ...existing CSS code... */
+
+.ok {
+    color: green !important;
+}
+
+.err {
+    color: red !important;
+}
+
+.info {
+    color: blue !important;
+}
+
+.blue {
+    color: blue !important;
+}
+
+.cyan {
+    color: cyan !important;
+}
+
+/* ...existing CSS code... */

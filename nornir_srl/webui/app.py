@@ -99,19 +99,13 @@ def run_fcli_command(command):
         return f"Unexpected error occurred: {str(e)}"
 
 def process_filter_option(filter_value):
-    """Process filter value keeping commas intact"""
+    """
+    Splits a comma-separated list (e.g. "ni=default,prefix=1.11.21.11/32")
+    into ["ni=default", "prefix=1.11.21.11/32"].
+    """
     if not filter_value:
         return []
-    
-    # Split by comma and clean
-    filters = [f.strip() for f in filter_value.split(',')]
-    
-    # Build command array
-    result = []
-    for f in filters:
-        if f:
-            result.extend(['-f', f])
-    return result
+    return [f.strip() for f in filter_value.split(',') if f.strip()]
 
 def format_command_output(output):
     """Format command output as string"""
@@ -135,14 +129,17 @@ def command(cmd):
     if request.method == 'POST':
         data = request.get_json()
         options_input = data.get('options', {})
-        command = ['fcli', '-t', topo_file, cmd]
-        
-        # Build command with options
+        cmd_args = ['fcli', '-t', topo_file, cmd]
+
+        # Build the fcli command with generic filter handling
         for option, value in options_input.items():
-            if value:
-                command.extend([option, value])
-                    
-        output = run_fcli_command(command)
+            if option == '-f':
+                for flt in process_filter_option(value):
+                    cmd_args += ['-f', flt]
+            else:
+                cmd_args += [option, value]
+
+        output = run_fcli_command(cmd_args)
         parsed_output = parse_ascii_table(output)
         
         if isinstance(parsed_output, str):
