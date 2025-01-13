@@ -387,3 +387,53 @@ fcli bgp-rib -r evpn -t 2 -f MAC="1A:DC:*"
 +--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 ```
 
+### Web UI
+
+In addition to the command-line interface, `nornir-srl` now includes a web-based user interface. This web UI provides a more user-friendly way to interact with the SRLinux devices, visualize the network topology, and perform various operations.
+
+To access the web UI, follow these steps:
+
+1. Ensure you have Docker installed and running on your system.
+2. Pull the latest `nornir-srl` container image from the repository.
+3. Run the container with the following command:
+
+```sh
+docker run -d -p 8080:8080 --name nornir-srl-web ghcr.io/srl-labs/nornir-srl:latest
+```
+
+4. Open your web browser and navigate to `http://localhost:8080`.
+
+The web UI provides the following features:
+
+- Network topology visualization
+- Device status and information
+- BGP peers and RIB information
+- MAC table and subinterface details
+- System information
+
+The web UI is designed to be intuitive and easy to use, making it simpler to manage and monitor your SRLinux devices.
+
+## Clone the Repository
+
+```bash
+git clone https://github.com/fullstopdev/nornir-srl.git
+cd nornir-srl
+```
+
+## Run the WebUI
+
+Install dependencies (Flask, etc.):
+
+```bash
+pip install -r requirements.txt
+```
+
+Then run the Flask application:
+
+```bash
+cd nornir_srl/webui
+python app.py
+```
+
+Point your browser to http://127.0.0.1:8080 to use the Web UI.
+
